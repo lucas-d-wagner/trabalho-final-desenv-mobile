@@ -5,6 +5,7 @@ import 'package:trabalho_final_desenv_mobile/app/views/parking_spot/parking_spot
 
 import '../../components/menu.dart';
 import '../../controllers/parking_spot_controller.dart';
+import '../../models/parking_spot_model.dart';
 
 class ParkingSpotListingPage extends StatefulWidget {
   const ParkingSpotListingPage({super.key});
@@ -26,29 +27,67 @@ class _ParkingSpotListingPageState extends State<ParkingSpotListingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: const MenuWidget(),
-        appBar: AppBar(
-          backgroundColor: Colors.amber,
-          title: const Text('Parking Spots'),
+      drawer: const MenuWidget(),
+      appBar: AppBar(
+        backgroundColor: Colors.amber,
+        title: const Text('Parking Spots'),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Obx(
+                () => _controller.isLoading.value
+                ? const Center(child: CircularProgressIndicator())
+                : DataTable(
+              columns: const [
+                DataColumn(label: Text('Vaga')),
+                DataColumn(label: Text('Editar')),
+                DataColumn(label: Text('Excluir')),
+              ],
+              rows: _controller.parkingSpotList.map((spot) {
+                return DataRow(cells: [
+                  DataCell(Text(spot.parkingSpotNumber)),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      Get.to(ParkingSpotFormPage(spotModel: spot));
+                    },
+                  )),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      bool isSuccess = await _controller.deleteModel(spot.id);
+                      if(isSuccess){
+                        Get.snackbar(
+                          "Sucesso",
+                          "Deletado com Sucesso",
+                          icon: Icon(Icons.check, color: Colors.white),
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.lightGreen,
+                          colorText: Colors.white,
+                        );
+                      }else{
+                        Get.snackbar(
+                            "Erro",
+                            "Houve um erro ao deletar.",
+                            icon: Icon(Icons.error, color: Colors.white),
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.red,
+                            colorText: Colors.white
+                        );
+                      }
+                      _controller.loadParkingSpotList();
+                    },
+                  )),
+                ]);
+              }).toList(),
+            ),
+          ),
         ),
-        body: Obx(() => _controller.isLoading.value ? const Center(child: CircularProgressIndicator()) : DataTable(
-          columns: const [
-            DataColumn(label: Text('Vaga')),
-            DataColumn(label: Text('Placa')),
-            DataColumn(label: Text('Responsável')),
-          ],
-          rows: _controller.parkingSpotList.map((spot) {
-            return DataRow(cells: [
-              DataCell(Text(spot.parkingSpotNumber)),
-              DataCell(Text(spot.licensePlateCar)),
-              DataCell(Text(spot.responsibleName)),
-            ]);
-          }).toList(),
-        )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Get.to(const ParkingSpotFormPage());
+          Get.to(ParkingSpotFormPage(spotModel: ParkingSpotModel.empty()));
         },
         child: const Icon(Icons.add),
       ),

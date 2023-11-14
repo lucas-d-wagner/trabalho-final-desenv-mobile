@@ -4,10 +4,12 @@ import 'package:get/get.dart';
 
 import '../../components/menu.dart';
 import '../../controllers/parking_spot_controller.dart';
+import '../../models/parking_spot_model.dart';
 
 class ParkingSpotFormPage extends StatefulWidget {
-  const ParkingSpotFormPage({super.key});
+  const ParkingSpotFormPage({super.key, required this.spotModel});
 
+  final ParkingSpotModel spotModel;
 
   @override
   State<ParkingSpotFormPage> createState() => _ParkingSpotFormPageState();
@@ -21,14 +23,14 @@ class _ParkingSpotFormPageState extends State<ParkingSpotFormPage> {
   @override
   void initState() {
     super.initState();
-    _controller.gerarInstanciaVazia();
+    _controller.setInstance(widget.spotModel);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('//TODO'),
+        title: const Text('Vaga'),
       ),
       body:
         SingleChildScrollView(
@@ -66,11 +68,9 @@ class _ParkingSpotFormPageState extends State<ParkingSpotFormPage> {
                   },
                 ),
                 TextFormField(
-                  controller: _dateController,
-                  decoration: const InputDecoration(labelText: 'Data de Registro'),
-                  onTap: () {
-                    _selectDate(context);
-                  },
+                  enabled: false,
+                  initialValue: _controller.spot?.registrationDate.toString() ?? '',
+                  decoration: const InputDecoration(labelText: 'Data de Registro')
                 ),
                 TextFormField(
                   initialValue: _controller.spot?.colorCar ?? '',
@@ -118,11 +118,10 @@ class _ParkingSpotFormPageState extends State<ParkingSpotFormPage> {
                           "Houve um erro ao salvar.",
                           icon: Icon(Icons.error, color: Colors.white),
                           snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Colors.red,
                           colorText: Colors.white
                       );
                     }
-                    Get.back();
                   },
                   child: const Text('Salvar'),
                 ),
@@ -132,19 +131,6 @@ class _ParkingSpotFormPageState extends State<ParkingSpotFormPage> {
         )
       )
     );
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked.toString() != _dateController.text) {
-      _dateController.text = picked.toString();
-      _controller.spot?.registrationDate = picked;
-    }
   }
 
 }

@@ -15,11 +15,12 @@ class ParkingSpotController extends GetxController {
 
   static ParkingSpotController get parkingSpotController => Get.find();
 
-  void gerarInstanciaVazia() {
-    spot = ParkingSpotModel.empty();
+  void setInstance(ParkingSpotModel spotModel) {
+    spot = spotModel;
   }
 
   Future<dynamic> loadParkingSpotList()  async {
+    parkingSpotList = <ParkingSpotModel>[].obs;
     isLoading.value = true;
     var list = await parkingSpotService.fetchParkingSpotList();
     parkingSpotList.addAll(list);
@@ -32,12 +33,20 @@ class ParkingSpotController extends GetxController {
     bool isSuccess = false;
 
     isLoading.value = true;
+    var payload = spot?.toJson();
     if(isNew(spot!)) {
-      var payload = spot?.toJson();
       isSuccess = await parkingSpotService.save(payload!);
     } else {
-      //atualizar
+      isSuccess = await parkingSpotService.update(payload!);
     }
+    isLoading.value = false;
+    update();
+    return isSuccess;
+  }
+
+  Future<bool> deleteModel(String id)  async {
+    isLoading.value = true;
+    bool isSuccess = await parkingSpotService.delete(id);
     isLoading.value = false;
     update();
     return isSuccess;
